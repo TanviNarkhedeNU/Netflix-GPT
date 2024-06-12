@@ -1,6 +1,11 @@
 import { checkValidData } from "../utils/validate";
 import Header from "./Header";
 import { useState, useRef } from "react";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../utils/firebase";
 const Login = () => {
   const email = useRef(null);
   const password = useRef(null);
@@ -13,8 +18,48 @@ const Login = () => {
     //validate form data
     const message = checkValidData(email.current.value, password.current.value);
     setErrorMessage(message);
-
-    //signin/signup
+    //if(message) return  - another way
+    //sign in sign up
+    if (message === null) {
+      //signin/signup
+      if (!isSignInForm) {
+        //signup logic
+        createUserWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        )
+          .then((userCredential) => {
+            // Signed up
+            const user = userCredential.user;
+            // ...
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            setErrorMessage(errorCode + " " + errorMessage);
+            // ..
+          });
+      } else {
+        //sign in
+        signInWithEmailAndPassword(
+          auth,
+          email.current.value,
+          password.current.value
+        )
+          .then((userCredential) => {
+            // Signed in
+            const user = userCredential.user;
+            // ...
+            console.log("sign in", user);
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            setErrorMessage(errorCode + " " + errorMessage);
+          });
+      }
+    }
   };
   return (
     <div>
@@ -25,8 +70,8 @@ const Login = () => {
           alt="netflix-bg"
         />
       </div>
-      <form
-        onSubmit={(e) => e.preventDefault}
+      <div
+        onSubmit={(e) => e.preventDefault()}
         className="bg-opacity-80 bg-black p-12 absolute w-3/12 my-24 right-0 mx-auto left-0"
       >
         {/* <div className="flex-col justify-items-center"> */}
@@ -72,7 +117,7 @@ const Login = () => {
             : "Already registered? Sign In Now"}
         </p>
         {/* </div> */}
-      </form>
+      </div>
     </div>
   );
 };
